@@ -125,9 +125,11 @@ function _put($case) {
 		case 'set_compulsory':
 			$q = new Question($db);
 			$q->load($fk_question);
-			if($q->compulsory_answer == 0)$q->compulsory_answer = 1;
-			elseif($q->compulsory_answer == 1)$q->compulsory_answer = 0;
-			$q->save();
+			if ($q->compulsory_answer == 0) $q->compulsory_answer = 1;
+			elseif ($q->compulsory_answer == 1) $q->compulsory_answer = 'DEFAULT';
+			if ($q->is_section == 0) $q->is_section = 'DEFAULT';
+			$result = $q->save();
+			if ($result == -1) setEventMessage($q->errors, 'errors');
 
 		    _get('back_to_question');
 		    break;
@@ -145,7 +147,10 @@ function add_question($fk_questionnaire, $type_question, $rang=0) {
 	$q->rang = $rang;
 	if($q->type =='page' || $q->type=='separator')$q->label=$q->TTypes[$q->type];
 	$q->incrementAllRank();
-	$q->save();
+	$q->is_section = 'DEFAULT';
+	$q->compulsory_answer = 'DEFAULT';
+	$result = $q->save();
+	if ($result == -1) setEventMessage($q->errors, 'errors');
 
 	return $q;
 
@@ -159,7 +164,8 @@ function add_choice($fk_question, $type_choice, $label='') {
 	$choice->fk_question = $fk_question;
 	$choice->type = $type_choice;
 	if(!empty($label)) $choice->label = $label;
-	$choice->save();
+	$result = $choice->save();
+	if ($result == -1) setEventMessage($choice->errors, 'errors');
 
 	return $choice;
 
